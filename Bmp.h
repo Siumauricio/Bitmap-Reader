@@ -1,8 +1,9 @@
 #ifndef BMP_H
 #define BMP_H
 #include <vector>
+#include <QImage>
 using namespace std;
-
+#include <string>
 
 #pragma pack(push,1)
 class BMP_Header {
@@ -13,6 +14,8 @@ public:
     int OffsetData;
 };
 #pragma pack(pop)
+
+#pragma pack(push,1)
 class BMP_InfoHeader {
 public:
     int Tamano;
@@ -27,30 +30,33 @@ public:
     int Colores_Usados;
     int Colores_Importantes;
 };
+#pragma pack(pop)
 
-struct RGB {
-    unsigned char r,g, b= 0;
+struct RGB24 {
+    uint8_t r,g,b,t;
     void inverse () {
             r = 255 - r;
             g = 255 - g;
             b = 255 - b;
         }
 };
+
+
 class Bitmap
 {
-
-
 public:
     BMP_Header Header;
     BMP_InfoHeader InfoHeader;
     Bitmap ();
     Bitmap (char*);
-    vector<RGB>Colores;
+    vector<int>Paleta;
+    vector<int>Colores;
+    vector<int>PaletaColores;
+    void crearPaletaColores();
+    void crearGrafica8Bits(QImage&);
+    void ObtenerPaleta(char* Filename);
     void ObtenerBmp_Header(char*);
     void ObtenerBmp_InfoHeader (char*);
-    void color(int, int, int, int,int);
 };
 #endif // !BITMAP_H
-
-
 
