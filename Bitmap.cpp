@@ -1,7 +1,13 @@
+
 #include "Bmp.h"
 #include <fstream>
 #include <iostream>
 #include <iomanip>
+#include <string>
+#include <string.h>
+#include <sstream>
+#include <stdlib.h>
+#include <QColor>
 using namespace std;
 
 Bitmap::Bitmap () {}
@@ -93,24 +99,70 @@ void Bitmap::ObtenerBmp_InfoHeader (char* Filename) {
     cout << "+ Colores U: " << InfoHeader.Colores_Usados << endl;
     cout << "+ Colores I: " << InfoHeader.Colores_Importantes << endl;
 
-
-
   File.seekg (Header.OffsetData, File.beg);
 
-
-
   for (int i = 0; i < InfoHeader.Anchura*InfoHeader.Altura; i++) {
-      RGB Pixel;
-      File.read (reinterpret_cast<char*>(&Pixel), sizeof (RGB));
-      Colores.push_back (Pixel);
+       RGB24 Pixel;
+      File.read (reinterpret_cast<char*>(&Pixel), 1);
+      Colores.push_back (Pixel.r);
+
   }
+
+/*24 bits
+  for (int i = 0; i < InfoHeader.Anchura*InfoHeader.Altura; i++) {
+      RGB24  Pixel;
+      File.read (reinterpret_cast<char*>(&Pixel), sizeof (RGB24));
+      Colores.push_back (Pixel);
+  }*/
   File.close ();
-
-
-
-
-   // for (int i = 0; i < Colores.size(); i++) {
-      //  cout << i << " R: " << (int)Colores[i].r << " G: " << (int)Colores[i].g << " B:" <<(int) Colores[i].b << endl;
-   // }
-     File.close ();
+     ObtenerPaleta(Filename);
 }
+
+void Bitmap::ObtenerPaleta(char* Filename){
+    ifstream File;
+    File.open (Filename, ifstream::in | ifstream::binary);
+    if (File.fail ()) {
+        return;
+    }
+    char* Informacion = new char[sizeof (BMP_InfoHeader) + sizeof (BMP_Header)];
+    File.read (Informacion, sizeof (BMP_InfoHeader) + sizeof (BMP_Header));
+    File.seekg(54,File.beg);
+    for (int i = 0; i < 256; ++i) {
+        RGB24  Pixel;
+        File.read (reinterpret_cast<char*>(&Pixel),sizeof(RGB24));
+        PaletaColores.push_back(Pixel.r);
+        PaletaColores.push_back(Pixel.g);
+        PaletaColores.push_back(Pixel.b);
+        PaletaColores.push_back(Pixel.t);
+    }
+}
+
+void Bitmap::crearPaletaColores(){
+    int r, g, b, t;
+    for (int indice = 0; indice <PaletaColores.size() - 3; indice++) {
+        b = (int)PaletaColores[indice];
+        indice++;
+        g = (int) PaletaColores[indice];
+        indice++;
+        r = (int) PaletaColores[indice];
+        indice++;
+        Paleta.push_back(qRgb(r,g,b));
+     }
+}
+
+void Bitmap::crearGrafica8Bits(QImage &img){
+    crearPaletaColores();
+    int r, g, b;
+    int posbit = 0;
+    int rgb = 0;
+    int indice = 0;
+    for (int h = InfoHeader.Altura - 1; h >= 0; h--) {
+         for (int w = 0; w < InfoHeader.Anchura; w++) {
+              indice = (int)Colores[posbit];       
+              rgb = this->Paleta[indice];
+              posbit++;
+              img.setPixel(w, h, rgb);
+          }
+     }
+}
+
