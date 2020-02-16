@@ -40,7 +40,20 @@ struct RGB24 {
             b = 255 - b;
         }
 };
-
+struct RGB24B {
+    uint8_t r,g,b;
+    void inverse () {
+            r = 255 - r;
+            g = 255 - g;
+            b = 255 - b;
+        }
+};
+struct RGB16 {
+   uint8_t r,g,b;
+};
+struct RGBT {
+    unsigned char  r,g;
+};
 
 class Bitmap
 {
@@ -52,9 +65,16 @@ public:
     vector<int>Paleta;
     vector<int>Colores;
     vector<int>PaletaColores;
-    void crearPaletaColores();
+    vector<RGB16>Colores16B;
+    vector<RGB24B>Colores24;
+    void crearPaletaColores8Bits();
+    string decimaltoBinary(int,int);
+    RGB16 obtenerRGB(string digito);
+    void decToHexa(int n) ;
     void crearGrafica8Bits(QImage&);
-    void ObtenerPaleta(char* Filename);
+    void ObtenerPaleta8Bits(char* Filename);
+
+    void crearGrafica16Bits();
     void ObtenerBmp_Header(char*);
     void ObtenerBmp_InfoHeader (char*);
 };
