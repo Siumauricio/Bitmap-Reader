@@ -7,8 +7,8 @@
 using namespace  std;
 
 
-QImage imagen=QImage("//home//siumauricio//Escritorio//8Bits//panda.bmp");
-Bitmap bmp((char*)"//home//siumauricio//Escritorio//8Bits//panda.bmp");                  //Y ese Bitmap es tu clase sique interesante y se llama asi directamente y se crea el objeto que chiste esto
+QImage imagen=QImage("//home//siumauricio//Escritorio//24Bits//x.bmp");
+Bitmap bmp((char*)"//home//siumauricio//Escritorio//24Bits/x.bmp");                  //Y ese Bitmap es tu clase sique interesante y se llama asi directamente y se crea el objeto que chiste esto
 int sizeX=bmp.InfoHeader.Anchura;
 int sizeY=bmp.InfoHeader.Altura;//Setearle el tamano al Layout
 
@@ -24,23 +24,47 @@ MainWindow::MainWindow(QWidget *parent) :
       int posbit=0;
       int pos=0;
 
-      bmp.crearGrafica8Bits(image);
+
+
+
+
+     // bmp.crearGrafica8Bits(image);
+      for (int h = sizeY -1; h >= 0; h--) {
+               for (int w = 0; w < sizeX; w++) {
+                   b =bmp.Colores24[posbit].b;
+                   g= bmp.Colores24[posbit].g;
+                   r = bmp.Colores24[posbit].r;
+                   posbit+=1;
+                   image.setPixel(w, h, qRgb(b,g,r));
+               }
+          
+             //posbit+=1;
+}
+
+
+
+
+
+/*
+      for (int h = sizeY -1; h >= 0; h--) {
+               for (int w = 0; w < sizeX; w++) {
+                   b =bmp.Colores16B[posbit].b;
+                   g= bmp.Colores16B[posbit].g;
+                   r = bmp.Colores16B[posbit].r;
+                   posbit+=1;
+                   image.setPixel(w, h, qRgb(r,g,b));
+               }
+          //    posbit+=1;
+}
+*/
+      //bmp.crearGrafica8Bits(image);
       QGraphicsScene *graphic=new QGraphicsScene(this);
       graphic->addPixmap(QPixmap::fromImage(image));
       ui->graphicsView->setScene(graphic);
 }
 //24Bits
 /*
-  for (int h = sizeY -1; h >= 0; h--) {
-           for (int w = 0; w < sizeX; w++) {
-               b =bmp.Colores[posbit].b;
-               g= bmp.Colores[posbit].g;
-               r = bmp.Colores[posbit].r;
-               posbit+=1;
-               image.setPixel(w, h, qRgb(b,g,r));
-           }
-      //    posbit+=1;
-       }
+
 */
 MainWindow::~MainWindow()
 {
