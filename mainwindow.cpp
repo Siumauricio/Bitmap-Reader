@@ -7,66 +7,85 @@
 using namespace  std;
 
 
-QImage imagen=QImage("//home//siumauricio//Escritorio//24Bits//x.bmp");
-Bitmap bmp((char*)"//home//siumauricio//Escritorio//24Bits/x.bmp");                  //Y ese Bitmap es tu clase sique interesante y se llama asi directamente y se crea el objeto que chiste esto
-int sizeX=bmp.InfoHeader.Anchura;
-int sizeY=bmp.InfoHeader.Altura;//Setearle el tamano al Layout
-
- //Format_RGB30
-QImage image(sizeX,sizeY,QImage::Format_RGB30);
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-      int r, g, b;
-      int posbit=0;
-      int pos=0;
-
-
-
-
-
-     // bmp.crearGrafica8Bits(image);
-      for (int h = sizeY -1; h >= 0; h--) {
-               for (int w = 0; w < sizeX; w++) {
-                   b =bmp.Colores24[posbit].b;
-                   g= bmp.Colores24[posbit].g;
-                   r = bmp.Colores24[posbit].r;
-                   posbit+=1;
-                   image.setPixel(w, h, qRgb(b,g,r));
-               }
-          
-             //posbit+=1;
 }
-
-
-
-
-
-/*
-      for (int h = sizeY -1; h >= 0; h--) {
-               for (int w = 0; w < sizeX; w++) {
-                   b =bmp.Colores16B[posbit].b;
-                   g= bmp.Colores16B[posbit].g;
-                   r = bmp.Colores16B[posbit].r;
-                   posbit+=1;
-                   image.setPixel(w, h, qRgb(r,g,b));
-               }
-          //    posbit+=1;
-}
-*/
-      //bmp.crearGrafica8Bits(image);
-      QGraphicsScene *graphic=new QGraphicsScene(this);
-      graphic->addPixmap(QPixmap::fromImage(image));
-      ui->graphicsView->setScene(graphic);
-}
-//24Bits
-/*
-
-*/
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::on_Aceptar_clicked()
+{
+
+   QString tuna=ui->nombre->text();
+    string palabra=ui ->nombre->text().toStdString();
+    string tipo=ui ->tipo->text().toStdString();
+
+    QImage imagen;
+    QImage image;
+
+    int r, g, b=0;
+    int posbit=0;
+    if (tipo=="24") {
+          Bitmap bmp;
+        imagen=QImage("//home//siumauricio//Escritorio//24Bits//"+tuna+".bmp");
+        if (imagen.isNull()) {
+            return;
+        }
+        image=QImage(imagen.width(),imagen.height(),QImage::Format_RGB30);
+        bmp.crearGrafica24Bits(image,"//home//siumauricio//Escritorio//24Bits//"+palabra+".bmp");
+
+        bmp.Header.Tipo[2]='\0';
+        string pl= "==== BMP HEADER ====\nTipo: " "\nTamano Archivo: "+to_string(bmp.Header.Tamano)+"\nEspacio Reservado: "+to_string(sizeof(bmp.Header.Reservado))+"\nDataOffset: "+to_string(bmp.Header.OffsetData);
+        string inf="==== BMP INFOHEADER ====\nTamano: "+to_string(40)+"\nAnchura: "+to_string(bmp.InfoHeader.Anchura)+"\nAltura: "+to_string(bmp.InfoHeader.Altura)+"\nPlanos: "+to_string((int)bmp.InfoHeader.Planes[0])+"\nBits: "+to_string((int)bmp.InfoHeader.ContadorBits[0])+"\nCompresion: "+to_string(bmp.InfoHeader.Compresion)+"\nTamano Imagen: "+to_string(bmp.InfoHeader.TamanoImagen)+"\nPixel X: "+to_string(bmp.InfoHeader.Pixeles_X)+"\nPixel Y:"+to_string(bmp.InfoHeader.Pixeles_Y)+"\nColores U: "+to_string(bmp.InfoHeader.Colores_Usados)+"\nColores I: "+to_string(bmp.InfoHeader.Colores_Importantes) ;
+        QString qstr = QString::fromStdString(pl+"\n\n"+inf);
+        ui->Info->setText(qstr);
+
+    }else if (tipo=="16") {
+          Bitmap bmp;
+        imagen=QImage("//home//siumauricio//Escritorio//16Bits//"+tuna+".bmp");
+        if (imagen.isNull()) {
+            return;
+        }
+        image=QImage(imagen.width(),imagen.height(),QImage::Format_RGB30);
+         bmp.crearGrafica16Bits(image,"//home//siumauricio//Escritorio//16Bits//"+palabra+".bmp");
+         bmp.Header.Tipo[2]='\0';
+         string pl= "==== BMP HEADER ====\nTipo: " "\nTamano Archivo: "+to_string(bmp.Header.Tamano)+"\nEspacio Reservado: "+to_string(sizeof(bmp.Header.Reservado))+"\nDataOffset: "+to_string(bmp.Header.OffsetData);
+         string inf="==== BMP INFOHEADER ====\nTamano: "+to_string(sizeof(40))+"\nAnchura: "+to_string(bmp.InfoHeader.Anchura)+"\nAltura: "+to_string(bmp.InfoHeader.Altura)+"\nPlanos: "+to_string((int)bmp.InfoHeader.Planes[0])+"\nBits: "+to_string((int)bmp.InfoHeader.ContadorBits[0])+"\nCompresion: "+to_string(bmp.InfoHeader.Compresion)+"\nTamano Imagen: "+to_string(bmp.InfoHeader.TamanoImagen)+"\nPixel X: "+to_string(bmp.InfoHeader.Pixeles_X)+"\nPixel Y:"+to_string(bmp.InfoHeader.Pixeles_Y)+"\nColores U: "+to_string(bmp.InfoHeader.Colores_Usados)+"\nColores I: "+to_string(bmp.InfoHeader.Colores_Importantes) ;
+         QString qstr = QString::fromStdString(pl+"\n\n"+inf);
+         ui->Info->setText(qstr);
+
+    }else if(tipo=="8"){
+          Bitmap bmp;
+        imagen=QImage("//home//siumauricio//Escritorio//8Bits//"+tuna+".bmp");
+        if (imagen.isNull()) {
+            return;
+        }
+        image=QImage(imagen.width(),imagen.height(),QImage::Format_RGB30);
+        bmp.crearGrafica8Bits(image,"//home//siumauricio//Escritorio//8Bits//"+palabra+".bmp");
+        bmp.Header.Tipo[2]='\0';
+        string pl= "==== BMP HEADER ====\nTipo: " "\nTamano Archivo: "+to_string(bmp.Header.Tamano)+"\nEspacio Reservado: "+to_string(sizeof(bmp.Header.Reservado))+"\nDataOffset: "+to_string(bmp.Header.OffsetData);
+        string inf="==== BMP INFOHEADER ====\nTamano: "+to_string(sizeof(bmp.InfoHeader))+"\nAnchura: "+to_string(bmp.InfoHeader.Anchura)+"\nAltura: "+to_string(bmp.InfoHeader.Altura)+"\nPlanos: "+to_string((int)bmp.InfoHeader.Planes[0])+"\nBits: "+to_string((int)bmp.InfoHeader.ContadorBits[0])+"\nCompresion: "+to_string(bmp.InfoHeader.Compresion)+"\nTamano Imagen: "+to_string(bmp.InfoHeader.TamanoImagen)+"\nPixel X: "+to_string(bmp.InfoHeader.Pixeles_X)+"\nPixel Y:"+to_string(bmp.InfoHeader.Pixeles_Y)+"\nColores U: "+to_string(bmp.InfoHeader.Colores_Usados)+"\nColores I: "+to_string(bmp.InfoHeader.Colores_Importantes) ;
+        QString qstr = QString::fromStdString(pl+"\n\n"+inf);
+        ui->Info->setText(qstr);
+
+    }
+
+    QGraphicsScene *graphic=new QGraphicsScene(this);
+    graphic->addPixmap(QPixmap::fromImage(image));
+    ui->graphicsView->setScene(graphic);
+}
+
+void MainWindow::on_Limpiar_clicked()
+{
+    QGraphicsScene *graphic=new QGraphicsScene(this);
+    ui->nombre->setText("");
+    ui->Info->setText("");
+    ui->tipo->setText("");
+    ui->graphicsView->setScene(graphic);
 }
