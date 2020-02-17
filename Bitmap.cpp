@@ -15,12 +15,11 @@ using namespace std;
 
 Bitmap::Bitmap () {}
 
-Bitmap::Bitmap (char* Filename) {
-    ObtenerBmp_Header (Filename);
-    ObtenerBmp_InfoHeader (Filename);
+Bitmap::Bitmap (string Filename) {
+
 }
 
-void Bitmap::ObtenerBmp_Header (char* Filename) {
+void Bitmap::ObtenerBmp_Header (string Filename) {
     ifstream File;
     File.open (Filename, ifstream::in | ifstream::binary);
     if (File.fail ()) {
@@ -39,7 +38,6 @@ void Bitmap::ObtenerBmp_Header (char* Filename) {
     copy (Header_Posiciones + 10, Header_Posiciones + 14, informacion);
     memcpy (&Header.OffsetData, informacion, 4);
 
-
     cout << "==== BMP HEADER ====" << endl;
     cout << "+ Tipo: " << Header.Tipo[0] << Header.Tipo[1] << endl;
     cout << "+ Tamano Archivo: " << Header.Tamano << endl;
@@ -50,7 +48,7 @@ void Bitmap::ObtenerBmp_Header (char* Filename) {
     File.close ();
 }
 
-void Bitmap::ObtenerBmp_InfoHeader (char* Filename) {
+void Bitmap::ObtenerBmp_InfoHeader (string Filename) {
     ifstream File;
     File.open (Filename, ifstream::in | ifstream::binary);
     if (File.fail ()) {
@@ -91,7 +89,7 @@ void Bitmap::ObtenerBmp_InfoHeader (char* Filename) {
     memcpy (&InfoHeader.Colores_Importantes, informacion, 4);
 
     cout << "==== BMP INFOHEADER ====" << endl;
-    cout << "+ Tamano: " << sizeof (BMP_InfoHeader) << endl;
+    cout << "+ Tamano: " << 40<< endl;
     cout << "+ Anchura: " << InfoHeader.Anchura << endl;
     cout << "+ Altura: " << InfoHeader.Altura << endl;
     cout << "+ Planos: " << (int)InfoHeader.Planes[0] << endl;
@@ -102,37 +100,66 @@ void Bitmap::ObtenerBmp_InfoHeader (char* Filename) {
     cout << "+ Pixel Y: " << InfoHeader.Pixeles_Y << endl;
     cout << "+ Colores U: " << InfoHeader.Colores_Usados << endl;
     cout << "+ Colores I: " << InfoHeader.Colores_Importantes << endl;
+    File.seekg (Header.OffsetData, File.beg);
 
-File.seekg (Header.OffsetData, File.beg);
-//16 Bits
-/*
-  for (int i = 0; i < InfoHeader.Anchura*InfoHeader.Altura; i++) {
-      RGBT  Pixel;
+    if (getTipo()==24) {
+        for (int i = 0; i < InfoHeader.Anchura*InfoHeader.Altura; i++) {
+         RGB24B  Pixel;
+        File.read (reinterpret_cast<char*>(&Pixel), sizeof (RGB24B));
+         Colores24.push_back (Pixel);
+      }
+    }else if(getTipo()==16){
+        for (int i = 0; i < InfoHeader.Anchura*InfoHeader.Altura; i++) {
+            RGBT  Pixel;
+            File.read (reinterpret_cast<char*>(&Pixel), 2);
+            RGB16 Color=obtenerRGB(decimaltoBinary(Pixel.r,Pixel.g));
+            Colores16B.push_back (Color);
+      }
 
-      File.read (reinterpret_cast<char*>(&Pixel), 2);
-      RGB16 Color=obtenerRGB(decimaltoBinary(Pixel.r,Pixel.g));
-      Colores16B.push_back (Color);
-
-  }
-*/
-
-/*
-  for (int i = 0; i < InfoHeader.Anchura*InfoHeader.Altura; i++) {
-       RGB24 Pixel;
-      File.read (reinterpret_cast<char*>(&Pixel), 1);
-      Colores.push_back (Pixel.r);
-  }
-  */
-
-//24 bits
-  for (int i = 0; i < InfoHeader.Anchura*InfoHeader.Altura; i++) {
-      RGB24B  Pixel;
-      File.read (reinterpret_cast<char*>(&Pixel), sizeof (RGB24B));
-      Colores24.push_back (Pixel);
-  }
+    }else if (getTipo()==8) {
+        for (int i = 0; i < InfoHeader.Anchura*InfoHeader.Altura; i++) {
+             RGB24 Pixel;
+            File.read (reinterpret_cast<char*>(&Pixel), 1);
+            Colores.push_back (Pixel.r);
+      }
+          ObtenerPaleta8Bits(Filename);
+    }
   File.close ();
+}
 
-     //ObtenerPaleta8Bits(Filename);
+/*INICIO 24 BITS*/
+void Bitmap::crearGrafica24Bits(QImage &img,string path){
+    ObtenerBmp_Header (path);
+    ObtenerBmp_InfoHeader (path);
+     int posbit = 0;
+    int r,g,b=0;
+    for (int h = InfoHeader.Altura  -1; h >= 0; h--) {
+         for (int w = 0; w < InfoHeader.Anchura; w++) {
+             b =Colores24[posbit].b;
+             g =Colores24[posbit].g;
+             r =Colores24 [posbit].r;
+             posbit+=1;
+             img.setPixel(w, h, qRgb(b,g,r));
+         }
+       }
+}
+/*FIN 24 BITS*/
+
+/*INICIO 16 BITS*/
+void Bitmap::crearGrafica16Bits(QImage &img,string path){
+    ObtenerBmp_Header (path);
+    ObtenerBmp_InfoHeader (path);
+    int posbit = 0;
+   int r,g,b=0;
+   for (int h = InfoHeader.Altura  -1; h >= 0; h--) {
+        for (int w = 0; w < InfoHeader.Anchura; w++) {
+            b =Colores16B[posbit].b;
+            g =Colores16B[posbit].g;
+            r =Colores16B[posbit].r;
+            posbit+=1;
+            img.setPixel(w, h, qRgb(r,g,b));
+        }
+      }
 }
 string Bitmap::decimaltoBinary(int decimal,int decimal2){
     std::bitset<8> bin_x(decimal2);
@@ -140,9 +167,9 @@ string Bitmap::decimaltoBinary(int decimal,int decimal2){
     std::bitset<8> bin_x2(decimal);
     string digito2=bin_x2.to_string();
     digito+=digito2;
-  //  cout<< digito<<endl;
     return digito;
 }
+
 RGB16 Bitmap::obtenerRGB(string digito){
     RGB16 Pixel;
     string R;
@@ -157,10 +184,7 @@ RGB16 Bitmap::obtenerRGB(string digito){
           B+=digito[i];
           }
     }
-    //cout<<"\n"<<R<<" "<<G<<" "<<B<<endl;
-
     int r,g,b=0;
-
     int r_= (stoi(R, 0, 2)* 255) / 31;
     int g_= (stoi(G, 0, 2)* 255) / 31;
     int b_= (stoi(B, 0, 2)* 255) / 31;
@@ -169,8 +193,41 @@ RGB16 Bitmap::obtenerRGB(string digito){
     Pixel.b=b_;
     return Pixel;
 }
+/*FIN 16 BITS*/
 
-void Bitmap::ObtenerPaleta8Bits(char* Filename){
+/*INICIO 8 BITS*/
+void Bitmap::crearGrafica8Bits(QImage &img,string path){
+    ObtenerBmp_Header (path);
+    ObtenerBmp_InfoHeader (path);
+    crearPaletaColores8Bits();
+    int r, g, b;
+    int posbit = 0;
+    int rgb = 0;
+    int indice = 0;
+    for (int h = InfoHeader.Altura - 1; h >= 0; h--) {
+         for (int w = 0; w < InfoHeader.Anchura; w++) {
+              indice = (int)Colores[posbit];
+              rgb = this->Paleta[indice];
+              posbit++;
+              img.setPixel(w, h, rgb);
+          }
+     }
+}
+
+void Bitmap::crearPaletaColores8Bits(){
+    int r, g, b, t;
+    for (int indice = 0; indice <PaletaColores.size() - 3; indice++) {
+        b = (int)PaletaColores[indice];
+        indice++;
+        g = (int) PaletaColores[indice];
+        indice++;
+        r = (int) PaletaColores[indice];
+        indice++;
+        Paleta.push_back(qRgb(r,g,b));
+     }
+}
+
+void Bitmap::ObtenerPaleta8Bits(string Filename){
     ifstream File;
     File.open (Filename, ifstream::in | ifstream::binary);
     if (File.fail ()) {
@@ -188,37 +245,9 @@ void Bitmap::ObtenerPaleta8Bits(char* Filename){
         PaletaColores.push_back(Pixel.t);
     }
 }
+/*FIN 8 BITS*/
 
-void Bitmap::crearPaletaColores8Bits(){
-    int r, g, b, t;
-    for (int indice = 0; indice <PaletaColores.size() - 3; indice++) {
-        b = (int)PaletaColores[indice];
-        indice++;
-        g = (int) PaletaColores[indice];
-        indice++;
-        r = (int) PaletaColores[indice];
-        indice++;
-        Paleta.push_back(qRgb(r,g,b));
-     }
+int Bitmap::getTipo(){
+   int x=InfoHeader.ContadorBits[0];
+    return x;
 }
-
-void Bitmap::crearGrafica8Bits(QImage &img){
-
-    crearPaletaColores8Bits();
-    int r, g, b;
-    int posbit = 0;
-    int rgb = 0;
-    int indice = 0;
-    for (int h = InfoHeader.Altura - 1; h >= 0; h--) {
-         for (int w = 0; w < InfoHeader.Anchura; w++) {
-              indice = (int)Colores[posbit];       
-             rgb = this->Paleta[indice];
-              posbit++;
-              img.setPixel(w, h, rgb);
-          }
-     }
-}
-
-
-
-
