@@ -22,7 +22,7 @@ public:
     int Anchura;
     int Altura;
     char Planes[2];
-    char ContadorBits[2];
+    uint ContadorBits[2];
     int Compresion;
     int TamanoImagen;
     int Pixeles_X;
@@ -61,7 +61,7 @@ public:
     BMP_Header Header;
     BMP_InfoHeader InfoHeader;
     Bitmap ();
-    Bitmap (char*);
+    Bitmap (string);
     vector<int>Paleta;
     vector<int>Colores;
     vector<int>PaletaColores;
@@ -71,12 +71,17 @@ public:
     string decimaltoBinary(int,int);
     RGB16 obtenerRGB(string digito);
     void decToHexa(int n) ;
-    void crearGrafica8Bits(QImage&);
-    void ObtenerPaleta8Bits(char* Filename);
 
-    void crearGrafica16Bits();
-    void ObtenerBmp_Header(char*);
-    void ObtenerBmp_InfoHeader (char*);
+    void ObtenerPaleta8Bits(string Filename);
+
+    void crearGrafica8Bits(QImage&,string);
+    void crearGrafica16Bits(QImage&,string);
+    void crearGrafica24Bits(QImage&,string);
+
+    void ObtenerBmp_Header(string);
+    void ObtenerBmp_InfoHeader (string);
+
+    int getTipo();
 };
 #endif // !BITMAP_H
 
