@@ -105,25 +105,31 @@ void Bitmap::ObtenerBmp_InfoHeader (string Filename) {
     File.seekg (Header.OffsetData, File.beg);
 
     if (getTipo()==24) {
-        for (int i = 0; i < InfoHeader.Anchura*InfoHeader.Altura; i++) {
-         RGB24B  Pixel;
-        File.read (reinterpret_cast<char*>(&Pixel), sizeof (RGB24B));
-         Colores24.push_back (Pixel);
-      }
+        for (int row = 0; row < InfoHeader.Altura; row++){
+                for (int col = 0; col < InfoHeader.Anchura; col++) {
+                    RGB24B  Pixel;
+                    File.read (reinterpret_cast<char*>(&Pixel), sizeof (RGB24B));
+                    Colores24.push_back (Pixel);
+                }
+                File.seekg(InfoHeader.Anchura % 4, std::ios::cur);
+        }
     }else if(getTipo()==16){
-        for (int i = 0; i < InfoHeader.Anchura*InfoHeader.Altura; i++) {
-            RGB16  Pixel;
-            File.read (reinterpret_cast<char*>(&Pixel), 2);
-            RGB16 Color=obtenerRGB(decimaltoBinary(Pixel.r,Pixel.g));
-            Colores16B.push_back (Color);
-      }
-
+       for (int row = 0; row < InfoHeader.Altura; row++){
+                for (int col = 0; col < InfoHeader.Anchura; col++) {
+                    RGB16  Pixel;
+                    File.read (reinterpret_cast<char*>(&Pixel), 2);
+                    RGB16 Color=obtenerRGB(decimaltoBinary(Pixel.r,Pixel.g));
+                    Colores16B.push_back (Color);
+                }
+        }
     }else if (getTipo()==8) {
-        for (int i = 0; i < InfoHeader.Anchura*InfoHeader.Altura; i++) {
-             RGB8B Pixel;
-            File.read (reinterpret_cast<char*>(&Pixel), 1);
-            Colores8B.push_back (Pixel.r);
-      }
+        for (int row = 0; row < InfoHeader.Altura; row++){
+                for (int col = 0; col < InfoHeader.Anchura; col++) {
+                    RGB8B Pixel;
+                    File.read (reinterpret_cast<char*>(&Pixel), 1);
+                    Colores8B.push_back (Pixel.r);
+                }
+        }
           ObtenerPaleta8Bits(Filename);
     }
   File.close ();
@@ -131,9 +137,7 @@ void Bitmap::ObtenerBmp_InfoHeader (string Filename) {
 
 /*INICIO 24 BITS*/
 void Bitmap::crearGrafica24Bits(QImage &img,string path){
- //   ObtenerBmp_Header (path);
-  //  ObtenerBmp_InfoHeader (path);
-     int posbit = 0;
+    int posbit = 0;
     int r,g,b=0;
     for (int h = InfoHeader.Altura  -1; h >= 0; h--) {
          for (int w = 0; w < InfoHeader.Anchura; w++) {
@@ -143,24 +147,29 @@ void Bitmap::crearGrafica24Bits(QImage &img,string path){
              posbit+=1;
              img.setPixel(w, h, qRgb(b,g,r));
          }
-
        }
 }
 /*FIN 24 BITS*/
 
 /*INICIO 16 BITS*/
 void Bitmap::crearGrafica16Bits(QImage &img,string path){
-    ObtenerBmp_Header (path);
-    ObtenerBmp_InfoHeader (path);
-    int posbit = 0;
+   int posbit = 0;
    int r,g,b=0;
+   int relleno = 0;
+   int anchoAjustable = InfoHeader.Anchura;
+   while((anchoAjustable %2) != 0){
+       relleno += 1;
+       anchoAjustable += relleno;
+   }
    for (int h = InfoHeader.Altura  -1; h >= 0; h--) {
-        for (int w = 0; w < InfoHeader.Anchura; w++) {
-            b =Colores16B[posbit].b;
-            g =Colores16B[posbit].g;
-            r =Colores16B[posbit].r;
+        for (int w = 0; w < anchoAjustable; w++) {
+            if (w<InfoHeader.Anchura) {
+                b =Colores16B[posbit].b;
+                g =Colores16B[posbit].g;
+                r =Colores16B[posbit].r;
+                img.setPixel(w, h, qRgb(r,g,b));
+            }
             posbit+=1;
-            img.setPixel(w, h, qRgb(r,g,b));
         }
       }
 }
@@ -204,12 +213,21 @@ void Bitmap::crearGrafica8Bits(QImage &img,string path){
     int posbit = 0;
     int rgb = 0;
     int indice = 0;
+    int relleno = 0;
+    int anchoAjustable = InfoHeader.Anchura;
+    while((anchoAjustable % 4) != 0){
+        relleno += 1;
+        anchoAjustable += relleno;
+    }
+
     for (int h = InfoHeader.Altura - 1; h >= 0; h--) {
-         for (int w = 0; w < InfoHeader.Anchura; w++) {
+         for (int w = 0; w < anchoAjustable; w++) {
+             if(w<InfoHeader.Anchura){
               indice = (int)Colores8B[posbit];
               rgb = this->Paleta[indice];
-              posbit++;
               img.setPixel(w, h, rgb);
+             }
+                   posbit++;
           }
      }
 }
@@ -235,6 +253,6 @@ void Bitmap::ObtenerPaleta8Bits(string Filename){
 }
 /*FIN 8 BITS*/
 int Bitmap::getTipo(){
-   int x=InfoHeader.ContadorBits[0];
-    return x;
+   int bit=InfoHeader.ContadorBits[0];
+    return bit;
 }
