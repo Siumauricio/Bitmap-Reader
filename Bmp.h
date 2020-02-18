@@ -22,7 +22,7 @@ public:
     int Anchura;
     int Altura;
     char Planes[2];
-    uint ContadorBits[2];
+    char ContadorBits[2];
     int Compresion;
     int TamanoImagen;
     int Pixeles_X;
@@ -32,29 +32,17 @@ public:
 };
 #pragma pack(pop)
 
-struct RGB24 {
-    uint8_t r,g,b,t;
-    void inverse () {
-            r = 255 - r;
-            g = 255 - g;
-            b = 255 - b;
-        }
-};
 struct RGB24B {
     uint8_t r,g,b;
-    void inverse () {
-            r = 255 - r;
-            g = 255 - g;
-            b = 255 - b;
-        }
-};
-struct RGB16 {
-   uint8_t r,g,b;
-};
-struct RGBT {
-    unsigned char  r,g;
 };
 
+struct RGB16B {
+   uint8_t r,g,b;
+};
+
+struct RGB8B {
+    uint8_t r,g,b,t;
+};
 class Bitmap
 {
 public:
@@ -62,24 +50,25 @@ public:
     BMP_InfoHeader InfoHeader;
     Bitmap ();
     Bitmap (string);
-    vector<int>Paleta;
-    vector<int>Colores;
-    vector<int>PaletaColores;
-    vector<RGB16>Colores16B;
-    vector<RGB24B>Colores24;
-    void crearPaletaColores8Bits();
-    string decimaltoBinary(int,int);
-    RGB16 obtenerRGB(string digito);
-    void decToHexa(int n) ;
-
-    void ObtenerPaleta8Bits(string Filename);
-
-    void crearGrafica8Bits(QImage&,string);
-    void crearGrafica16Bits(QImage&,string);
-    void crearGrafica24Bits(QImage&,string);
-
     void ObtenerBmp_Header(string);
     void ObtenerBmp_InfoHeader (string);
+
+   /*24Bits*/
+    int cBYtes=0;
+    vector<RGB24B>Colores24;
+    void crearGrafica24Bits(QImage&,string);
+
+     /*16Bits*/
+    vector<RGB16B>Colores16B;
+    void crearGrafica16Bits(QImage&,string);
+    string decimaltoBinary(int,int);
+    RGB16B obtenerRGB(string digito);
+
+    /*8Bits*/
+    vector<int>Paleta;
+    vector<int>Colores8B;
+    void crearGrafica8Bits(QImage&,string);
+    void ObtenerPaleta8Bits(string Filename);
 
     int getTipo();
 };
