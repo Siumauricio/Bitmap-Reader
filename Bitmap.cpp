@@ -182,8 +182,8 @@ string Bitmap::decimaltoBinary(int decimal,int decimal2){
     return digito;
 }
 
-RGB16 Bitmap::obtenerRGB(string digito){
-    RGB16 Pixel;
+RGB16B Bitmap::obtenerRGB(string digito){
+    RGB16B Pixel;
     string R;
     string G;
     string B;
