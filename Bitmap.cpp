@@ -116,9 +116,9 @@ void Bitmap::ObtenerBmp_InfoHeader (string Filename) {
     }else if(getTipo()==16){
        for (int row = 0; row < InfoHeader.Altura; row++){
                 for (int col = 0; col < InfoHeader.Anchura; col++) {
-                    RGB16  Pixel;
+                    RGB16B  Pixel;
                     File.read (reinterpret_cast<char*>(&Pixel), 2);
-                    RGB16 Color=obtenerRGB(decimaltoBinary(Pixel.r,Pixel.g));
+                    RGB16B Color=obtenerRGB(decimaltoBinary(Pixel.r,Pixel.g));
                     Colores16B.push_back (Color);
                 }
         }
